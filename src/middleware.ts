@@ -1,8 +1,22 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
+import { getRolePermissions } from './lib/request-helpers';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET_UINT8 = new TextEncoder().encode(JWT_SECRET);
+
+// JWT Payload interface
+interface JWTPayload {
+  userId: string;
+  accountId: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'tpo' | 'faculty' | 'coordinator';
+  permissions?: string[];
+  iat?: number;
+  exp?: number;
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -16,8 +30,8 @@ export async function middleware(request: NextRequest) {
     '/reset-password',
     '/api/auth/login',
     '/api/auth/register',
-    '/api/auth/forgot-password',
-    '/api/auth/reset-password',
+    '/api/auth/logout',
+    '/api/auth/verify-account',
     '/api/test-db',
   ];
 
@@ -26,9 +40,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get the token from the Authorization header or cookies
-  const token = request.headers.get('authorization')?.replace('Bearer ', '') ||
-                request.cookies.get('token')?.value;
+  // Get the token from cookies (our auth system uses cookies)
+  const token = request.cookies.get('auth-token')?.value;
 
   if (!token) {
     // Redirect to login if no token is present
@@ -46,14 +59,34 @@ export async function middleware(request: NextRequest) {
 
   try {
     // Verify the JWT token
-    const secret = new TextEncoder().encode(JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, JWT_SECRET_UINT8);
+    
+    // Validate required fields
+    if (!payload.userId || !payload.accountId || !payload.email || !payload.role) {
+      throw new Error('Invalid token payload');
+    }
+
+    const jwtPayload = {
+      userId: payload.userId as string,
+      accountId: payload.accountId as string,
+      email: payload.email as string,
+      name: payload.name as string,
+      role: payload.role as 'admin' | 'tpo' | 'faculty' | 'coordinator',
+      permissions: payload.permissions as string[] | undefined,
+    };
+
+    // Get role permissions
+    const permissions = getRolePermissions(jwtPayload.role);
     
     // Add user info to headers for API routes
     if (pathname.startsWith('/api/')) {
       const requestHeaders = new Headers(request.headers);
-      requestHeaders.set('x-user-id', payload.sub as string);
-      requestHeaders.set('x-user-role', payload.role as string);
+      requestHeaders.set('x-user-id', jwtPayload.userId);
+      requestHeaders.set('x-account-id', jwtPayload.accountId);
+      requestHeaders.set('x-user-email', jwtPayload.email);
+      requestHeaders.set('x-user-name', jwtPayload.name);
+      requestHeaders.set('x-user-role', jwtPayload.role);
+      requestHeaders.set('x-user-permissions', JSON.stringify(permissions));
       
       return NextResponse.next({
         request: {
@@ -75,7 +108,7 @@ export async function middleware(request: NextRequest) {
     
     // Clear the invalid token cookie and redirect to login
     const response = NextResponse.redirect(new URL('/login', request.url));
-    response.cookies.delete('token');
+    response.cookies.delete('auth-token');
     return response;
   }
 }
