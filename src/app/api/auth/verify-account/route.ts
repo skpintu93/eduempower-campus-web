@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyTokenFromRequest } from '@/lib/edge-jwt';
-import { createErrorResponse, createSuccessResponse, getRolePermissions } from '@/lib/request-helpers';
+import { createErrorResponse, createSuccessResponse, getRolePermissions } from '@/lib/edge-helpers';
 import { AuthUser } from '@/types/auth';
 import { User, Account } from '@/models';
 import dbConnect from '@/lib/mongoose';

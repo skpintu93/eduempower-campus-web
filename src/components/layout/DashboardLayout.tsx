@@ -1,9 +1,9 @@
 import React from 'react';
-import { User } from '@/types/auth';
+import { AuthUser } from '@/types/auth';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  user?: User;
+  user?: AuthUser;
 }
 
 export default function DashboardLayout({ children, user }: DashboardLayoutProps) {

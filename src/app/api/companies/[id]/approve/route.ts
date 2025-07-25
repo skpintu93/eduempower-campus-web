@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createErrorResponse, createSuccessResponse, requireAuth, getAccountFromHeaders } from '@/lib/request-helpers';
+import { createErrorResponse, createSuccessResponse, requireAuth, getAccountFromHeaders } from '@/lib/edge-helpers';
 import { Company } from '@/models';
 import dbConnect from '@/lib/mongoose';
 

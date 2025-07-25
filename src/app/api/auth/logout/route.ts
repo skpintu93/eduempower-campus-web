@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { clearAuthCookie } from '@/lib/edge-jwt';
-import { createSuccessResponse } from '@/lib/request-helpers';
+import { createSuccessResponse } from '@/lib/edge-helpers';
 
 export async function POST(request: NextRequest) {
   try {

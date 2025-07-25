@@ -4,13 +4,13 @@ export async function testDatabaseConnection() {
   try {
     console.log('🔌 Testing database connection...');
     
-    const mongoose = await dbConnect();
+    const connection = await dbConnect();
     
     // Test a simple operation
-    if (!mongoose.connection.db) {
+    if (!connection.db) {
       throw new Error('Database connection not established');
     }
-    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collections = await connection.db.listCollections().toArray();
     console.log('✅ Database connection successful!');
     console.log(`📊 Found ${collections.length} collections in database`);
     

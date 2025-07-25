@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+// Removed mongoose import as it's not needed for types and causes Edge Runtime issues
 
 // User roles matching our database models
 export type UserRole = 'admin' | 'tpo' | 'faculty' | 'coordinator';

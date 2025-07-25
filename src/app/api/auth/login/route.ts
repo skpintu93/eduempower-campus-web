@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { setAuthCookie, generateToken } from '@/lib/edge-jwt';
-import { createErrorResponse, createSuccessResponse, checkRateLimit } from '@/lib/request-helpers';
+import { createErrorResponse, createSuccessResponse, checkRateLimit } from '@/lib/edge-helpers';
 import { LoginCredentials, AuthResponse, AuthUser } from '@/types/auth';
 import { User, Account } from '@/models';
 import dbConnect from '@/lib/mongoose';
