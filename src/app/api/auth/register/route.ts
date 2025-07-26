@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { setAuthCookie, generateToken } from '@/lib/edge-jwt';
-import { createErrorResponse, createSuccessResponse, checkRateLimit } from '@/lib/edge-helpers';
+import { createErrorResponse, createSuccessResponse, checkRateLimit, getAccountFromHeaders } from '@/lib/edge-helpers';
 import { validateAccount } from '@/lib/request-helpers';
 import { RegisterData, AuthResponse, AuthUser } from '@/types/auth';
 import { User, Account } from '@/models';
@@ -14,9 +14,11 @@ export async function POST(request: NextRequest) {
       return createErrorResponse('Too many registration attempts. Please try again later.', 429, 'RATE_LIMIT_EXCEEDED');
     }
 
+    const accountId = await getAccountFromHeaders(request);
+
     // Parse request body
     const body = await request.json();
-    const { name, email, password, role, accountId, phone }: RegisterData = body;
+    const { name, email, password, role, phone }: RegisterData = body;
 
     // Validate required fields
     if (!name || !email || !password || !role || !accountId) {
